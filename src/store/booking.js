@@ -7,9 +7,27 @@ export const useBookingStore = defineStore("booking", {
     bookings: [],
     loading: false,
     error: null,
+    editingBooking: null 
   }),
 
   actions: {
+    findBookingById(id) {
+      const found = this.bookings.find(b => b.id === id)
+      if (found) {
+        this.setEditingBooking(found)
+        return true
+      } else {
+        return false
+      }
+    },
+    
+    setEditingBooking(booking) {
+      this.editingBooking = booking
+    },
+    clearEditingBooking() {
+      this.editingBooking = null
+    },
+
     async fetchBookings() {
       this.loading = true;
       try {
@@ -26,12 +44,17 @@ export const useBookingStore = defineStore("booking", {
       try {
         const booking = await addBooking(newBooking);
         this.bookings.push(booking);
+        return booking;
       } catch (err) {
         this.error = "Failed to create booking";
+        throw err; // <-- (optional) rethrow error to handle it higher if needed
       } finally {
         this.loading = false;
       }
+
     },
+    
+
 
     async updateBooking(id, updatedBookingData) {
       this.loading = true;
