@@ -113,25 +113,32 @@ watch(
 )
 
 const findBooking = async () => {
-  console.log("findBooking called")
   if (!searchId.value) return
+
+  clearMessage()
+  clearFormFields()
+  clearBookingCreatedId()
+  
+  bookingStore.clearEditingBooking()
   loading.value = true
-  message.value = ''
+
   setTimeout(() => {
     const found = bookingStore.findBookingById(Number(searchId.value))
+
     if (found) {
       message.value = '✅ Booking loaded successfully!'
     } else {
       message.value = '❌ Booking not found. Please check your ID!'
     }
+
     loading.value = false
   }, 700)
 }
 
 
+
 const submitBooking = async () => {
   loading.value = true
-  message.value = ''
   setTimeout(async () => {
     if (bookingStore.editingBooking) {
       await bookingStore.updateBooking(bookingStore.editingBooking.id, {
@@ -149,6 +156,7 @@ const submitBooking = async () => {
       })
       bookingCreatedId.value = newBooking.id
       clearFormFields()
+      clearMessage()
     }
     loading.value = false
   }, 700)
