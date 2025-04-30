@@ -20,8 +20,7 @@
   </template>
   
   <script setup>
-  // Accept props
-  defineProps({
+   defineProps({
     dateModel: {
       type: String,
       required: true

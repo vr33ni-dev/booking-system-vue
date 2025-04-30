@@ -9,23 +9,15 @@
         class="w-full px-3 py-2 border rounded" />
 
       <button type="button" @click="findBooking"
-        class="w-full bg-blue-600 text-black py-2 px-4 rounded hover:bg-blue-700 mt-2" :disabled="loading">
+        class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 mt-2" :disabled="loading">
         Find Booking
       </button>
     </div>
 
-    <!-- Feedback Toast (Move it here) -->
-    <div v-if="message" class="relative mb-4 p-3 text-sm rounded"
-      :class="message.includes('❌') ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'">
-
-      <button @click="clearMessage" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
-        aria-label="Dismiss">
-        ✖️
-      </button>
-
+    <Notification v-if="message" :type="message.toLowerCase().includes('not found') ? 'error' : 'info'"
+      @dismiss="clearMessage">
       {{ message }}
-    </div>
-
+    </Notification>
 
 
 
@@ -37,10 +29,10 @@
     <form @submit.prevent="submitBooking" class="space-y-4">
       <input type="text" v-model="name" placeholder="Name" class="w-full px-3 py-2 border rounded" required />
 
-      <!-- Calendar picker -->
-      <Calendar v-model:dateModel="date" v-model:timeModel="time" />
+      <!-- DateTimePicker -->
+      <DateTimePicker v-model:dateTimeModel="dateTime" />
 
-      <button type="submit" class="w-full bg-green-600 text-black py-2 px-4 rounded hover:bg-green-700"
+      <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
         :disabled="loading">
         {{ bookingStore.editingBooking ? 'Save Changes' : 'Submit Booking' }}
       </button>
@@ -52,20 +44,11 @@
     </form>
 
     <!-- New Booking ID Confirmation -->
-    <div v-if="bookingCreatedId" class="relative bg-green-100 text-green-700 p-4 rounded mt-6 text-center">
-      <!-- Close X Button -->
-      <button @click="clearBookingCreatedId" class="absolute top-2 right-2 text-green-700 hover:text-green-900"
-        aria-label="Close">
-        ✖️
-      </button>
+    <Notification v-if="bookingCreatedId" type="success" title="Your booking was created!"
+      @dismiss="clearBookingCreatedId">
+      Your Booking ID is: <span class="font-bold">{{ bookingCreatedId }}</span>
+    </Notification>
 
-      <p class="text-lg font-semibold">✅ Your booking was created!</p>
-      <p class="mt-2">Your Booking ID is: <span class="font-bold">{{ bookingCreatedId }}</span></p>
-
-      <button @click="clearBookingCreatedId" class="mt-4 bg-blue-600 text-black px-4 py-2 rounded hover:bg-blue-700">
-        Got it!
-      </button>
-    </div>
 
 
     <!-- Loading Spinner -->
@@ -84,12 +67,15 @@
 import { ref, watch } from 'vue'
 import { useBookingStore } from '@/store/booking'
 import Calendar from '@/components/Calendar.vue'
+import DateTimePicker from '@/components/DateTimePicker.vue'
+
+import Notification from '@/components/Notification.vue'
 
 const bookingStore = useBookingStore()
 
 const name = ref('')
-const date = ref('')
-const time = ref('')
+const dateTime = ref('')
+
 const searchId = ref('')
 const loading = ref(false)
 const message = ref('')
@@ -101,39 +87,37 @@ watch(
   (booking) => {
     if (booking) {
       name.value = booking.name
-      date.value = booking.date
-      time.value = booking.time
+      dateTime.value = `${booking.dateTime}`
     } else {
       name.value = ''
-      date.value = ''
-      time.value = ''
+      dateTime.value = ''
     }
   },
   { immediate: true }
 )
 
-const findBooking = async () => {
-  if (!searchId.value) return
 
-  clearMessage()
-  clearFormFields()
+const findBooking = async () => {
   clearBookingCreatedId()
-  
-  bookingStore.clearEditingBooking()
+  clearMessage()
+
+  if (!searchId.value) return
   loading.value = true
 
-  setTimeout(() => {
-    const found = bookingStore.findBookingById(Number(searchId.value))
+  const result = await bookingStore.findBookingById(searchId.value)
+  clearFormFields()
 
-    if (found) {
-      message.value = '✅ Booking loaded successfully!'
-    } else {
-      message.value = '❌ Booking not found. Please check your ID!'
-    }
+  if (result) {
+    message.value = 'Booking loaded successfully.'
+    name.value = result.name
+    dateTime.value = result.dateTime
+  } else {
+    message.value = 'Booking not found. Please check your booking ID.'
+  }
 
-    loading.value = false
-  }, 700)
+  loading.value = false
 }
+
 
 
 
@@ -143,16 +127,15 @@ const submitBooking = async () => {
     if (bookingStore.editingBooking) {
       await bookingStore.updateBooking(bookingStore.editingBooking.id, {
         name: name.value,
-        date: date.value,
-        time: time.value
+        dateTime: dateTime.value
       })
-      message.value = '✅ Booking updated!'
+      console.log('Booking updated:', date, time)
+      message.value = 'Booking updated successfully.';
       bookingStore.clearEditingBooking()
     } else {
       const newBooking = await bookingStore.createBooking({
         name: name.value,
-        date: date.value,
-        time: time.value
+        dateTime: dateTime.value,
       })
       bookingCreatedId.value = newBooking.id
       clearFormFields()
@@ -164,13 +147,12 @@ const submitBooking = async () => {
 
 const cancelEditing = () => {
   bookingStore.clearEditingBooking()
-  message.value = '⚡ Editing canceled.'
+  message.value = 'Editing was canceled.'
 }
 
 const clearFormFields = () => {
   name.value = ''
-  date.value = ''
-  time.value = ''
+  dateTime.value = ''
   searchId.value = ''
 }
 

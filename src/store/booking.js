@@ -1,6 +1,6 @@
 // src/store/booking.js
 import { defineStore } from "pinia";
-import { getBookings, addBooking, deleteBooking } from "../services/bookingApi";
+import { getBookings, addBooking, findBookingById, updateBooking, deleteBooking } from "../services/bookingApi";
 
 export const useBookingStore = defineStore("booking", {
   state: () => ({
@@ -11,13 +11,17 @@ export const useBookingStore = defineStore("booking", {
   }),
 
   actions: {
-    findBookingById(id) {
-      const found = this.bookings.find(b => b.id === id)
-      if (found) {
-        this.setEditingBooking(found)
-        return true
-      } else {
-        return false
+    async findBookingById(id) {
+      this.loading = true
+      try {
+        const found = await findBookingById(id)
+        if (found) this.setEditingBooking(found)
+        return found
+      } catch (err) {
+        this.error = 'Lookup failed'
+        return null
+      } finally {
+        this.loading = false
       }
     },
     
@@ -51,17 +55,16 @@ export const useBookingStore = defineStore("booking", {
       } finally {
         this.loading = false;
       }
-
     },
     
 
 
     async updateBooking(id, updatedBookingData) {
-      this.loading = true;
+       this.loading = true;
       try {
         const updatedBooking = await updateBooking(id, updatedBookingData);
         const index = this.bookings.findIndex((b) => b.id === id);
-        if (index !== -1) {
+         if (index !== -1) {
           this.bookings[index] = updatedBooking;
         }
       } catch (err) {
