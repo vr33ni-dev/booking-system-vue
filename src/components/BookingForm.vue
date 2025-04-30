@@ -64,13 +64,14 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { useBookingStore } from '@/store/booking'
-import Calendar from '@/components/Calendar.vue'
 import DateTimePicker from '@/components/DateTimePicker.vue'
-
 import Notification from '@/components/Notification.vue'
 
+onUnmounted(() => {
+  bookingStore.clearEditingBooking()
+})
 const bookingStore = useBookingStore()
 
 const name = ref('')
@@ -129,7 +130,6 @@ const submitBooking = async () => {
         name: name.value,
         dateTime: dateTime.value
       })
-      console.log('Booking updated:', date, time)
       message.value = 'Booking updated successfully.';
       bookingStore.clearEditingBooking()
     } else {

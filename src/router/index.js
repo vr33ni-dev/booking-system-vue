@@ -2,6 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/views/Home.vue'
 import Admin from '@/views/Admin.vue'
+import Login from '@/views/Login.vue'
 
 const routes = [
   {
@@ -13,6 +14,11 @@ const routes = [
     path: '/admin',
     name: 'Admin',
     component: Admin
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login
   },
   {
     path: '/:pathMatch(.*)*',
@@ -27,15 +33,18 @@ const router = createRouter({
   routes
 })
 
+import { useUserStore } from '@/store/user'
+
 router.beforeEach((to, from, next) => {
-    const isAdmin = true // ← replace with real logic or store later
-  
-    if (to.name === 'Admin' && !isAdmin) {
-      next({ name: 'Home' }) // redirect to home
-    } else {
-      next() // allow navigation
-    }
-  })
+  const userStore = useUserStore()
+  const isLoggedIn = userStore.isLoggedIn
+
+  if (to.name === 'Admin' && !isLoggedIn) {
+    next({ name: 'Login' }) // Redirect to login page
+  } else {
+    next() // Allow navigation
+  }
+})
   
 
 export default router

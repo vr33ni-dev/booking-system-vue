@@ -7,8 +7,8 @@
 
     <ul class="space-y-4" v-else>
       <li v-for="booking in bookingStore.bookings" :key="booking.id"
-      class="p-4 border rounded flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-4 sm:space-y-0">
-              <div>
+        class="p-4 border rounded flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-4 sm:space-y-0">
+        <div>
           <p class="font-semibold">{{ booking.id }}</p>
           <p class="font-semibold">{{ booking.name }}</p>
           <p class="text-sm text-gray-500">{{ booking.dateTime }} </p>
@@ -25,14 +25,17 @@
     </ul>
 
     <!-- Editing Form shown if editing -->
-    <div v-if="editing" class="mt-8">
-      <h3 class="text-xl font-semibold mb-4">Edit Booking</h3>
-      <BookingFormAdmin @cancel="cancelEditing" />
-    </div>
+    <Transition enter-active-class="transition-opacity duration-200" enter-from-class="opacity-0"
+      leave-active-class="transition-opacity duration-200" leave-to-class="opacity-0">
+      <div v-if="editing" class="mt-8">
+        <h3 class="text-xl font-semibold mb-4">Edit Booking</h3>
+        <BookingFormAdmin :booking="currentBooking" @cancel="cancelEditing" />
+      </div>
+    </Transition>
+
 
   </div>
 </template>
-
 
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -41,18 +44,19 @@ import BookingFormAdmin from '@/components/BookingFormAdmin.vue'
 
 const bookingStore = useBookingStore()
 const editing = ref(false)
+const currentBooking = ref(null)
 
 onMounted(() => {
   bookingStore.fetchBookings()
 })
 
 const startEdit = (booking) => {
-  bookingStore.setEditingBooking(booking)
+  currentBooking.value = booking
   editing.value = true
 }
 
 const cancelEditing = () => {
-  bookingStore.clearEditingBooking()
+  currentBooking.value = null
   editing.value = false
 }
 </script>
