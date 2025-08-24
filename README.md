@@ -1,4 +1,5 @@
 # Booking system
+
 Imaginary surf shop booking system
 
 ## Architecture
@@ -39,7 +40,6 @@ Imaginary surf shop booking system
      - Displays all bookings.  
      - Calls `fetchBookings()` and `removeBooking()` actions in the Pinia store.
 
-
 ### Workflow
 
 1. **BookingForm.vue**  
@@ -65,3 +65,6 @@ Imaginary surf shop booking system
 
 - **Clean Separation of Concerns**:  
   Clear distinction between UI, State, and Service layers.
+
+---
+> **Note:** The canonical repository is [**on GitHub**](https://github.com/vr33ni-dev/booking-system-vue) · [Mirror on GitLab →](https://gitlab.com/vr33ni-personal/booking-system-vue) [![Mirror Status](https://github.com/vr33ni-dev/booking-system-vue/actions/workflows/mirror.yml/badge.svg)](https://github.com/vr33ni-dev/booking-system-vue/actions/workflows/mirror.yml)
